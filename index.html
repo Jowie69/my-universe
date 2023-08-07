@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Universe</title>
+    <link rel="shortcut icon" href="images/galaxy.png" type="image/x-icon">
+    <style>
+      body {
+        background-color:#000;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      canvas {
+        border: 1px solid #fff;
+        cursor: pointer;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+      }
+      .close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="starCanvas" width="800" height="600"></canvas>
+    <div class="modal" id="starModal">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2 id="starName"></h2>
+      <p id="starDescription"></p>
+      <p id="starQuote"></p>
+    </div>
+    <script>
+      const canvas = document.getElementById("starCanvas");
+      const ctx = canvas.getContext("2d");
+      const stars = [];
+      const numSmallStars = 141;
+      const numBigStars = 2;
+      const totalStars = numSmallStars + numBigStars;
+      const quotes = [
+        "Celestia: This star shines the brightest in the cosmic sky, representing the radiance of our love.",
+        "Lyrastra: A star known for its enchanting melodies, just like the music our hearts play together.",
+        "Eternia: This star signifies the eternal nature of our love, which knows no boundaries.",
+        "Orisus: A star that guides us through the darkest nights, just like you lead me to happiness.",
+        "Seraphina: This star burns with passion and intensity, much like the fire in our hearts.",
+        "Astranthea: A star that sparkles with a million dreams, mirroring the aspirations we share.",
+        "Solstice: This star symbolizes the turning point in our lives when we found each other.",
+        "Novaris: A star that bursts with energy and excitement, akin to the way you light up my world.",
+        "Lunastra: This star radiates a serene and calming glow, reminiscent of your soothing presence.",
+        "Galaxia: A star that dances gracefully among the galaxies, just like the rhythm of our love.",
+        "Bellatrix: This star signifies the strength and resilience of our love, unyielding and unwavering.",
+        "Aurelia: A star with a golden aura, mirroring the warm glow you bring into my life.",
+        "Polaris: This star acts as a guiding light, much like you are my true north.",
+        "Zyra: A star that glimmers with a mysterious allure, much like the depth of our love.",
+        "Nebula: This star embodies the beauty of chaos and creation, like the evolution of our love story.",
+        "Stellaire: A star that shines gracefully in the night sky, just like the elegance of your presence.",
+        "Cassiopeia: This star is a symbol of regal beauty, much like your majestic charm.",
+        "Amarastra: A star with a radiant glow, symbolizing the brilliance of our love.",
+        "Selena: This star radiates the romantic glow of our love, lighting up the darkness.",
+        "Bellisima: A star that represents the beauty of simplicity, much like the beauty of our love.",
+        "Valora: This star shines with valor, mirroring the strength of our love.",
+        "Serenata: A star that serenades the universe, just like the way your love serenades my heart.",
+        "Lysander: This star beams with charm, much like your irresistible allure.",
+        "Elarastra: A star that embodies the beauty and grace of our love story.",
+        "Celestine: This star sparkles with celestial wonder, much like the wonder of our love.",
+        "Aurelius: A star that embodies the golden aura of love that surrounds us.",
+        "Luminella: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Eclipsara: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyrella: A star that glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Solaria: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Stellaris: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Astrella: A star that represents the awe and wonder of our love.",
+        "Belladora: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Zyronia: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Auriona: This star embodies the golden aura of love that surrounds us.",
+        "Celesterra: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Luminara: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Ecliptus: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyleris: A star that glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Solaria: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Stellina: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Astrania: A star that represents the awe and wonder of our love.",
+        "Bellatrix: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Zyphira: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Aurinia: This star embodies the golden aura of love that surrounds us.",
+        "Celesterra: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Luminera: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Ecliptica: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyleris: A star that glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Solaria: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Bellarastra: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Astrania: A star that represents the awe and wonder of our love.",
+        "Zyrella: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Auriona: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Celesterra: This star embodies the golden aura of love that surrounds us.",
+        "Luminera: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Eclipsara: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Zyrella: A star that orbits in harmony, much like the way we move together in sync.",
+        "Solaria: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Astrania: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Belladora: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Zyronia: A star that represents the awe and wonder of our love.",
+        "Auriona: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Celesterra: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Luminera: This star embodies the golden aura of love that surrounds us.",
+        "Eclipsara: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Zyrella: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Solaria: A star that orbits in harmony, much like the way we move together in sync.",
+        "Astrania: A star that glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Belladora: This star shines with brilliance, much like the way you brighten up my life.",
+        "Zyronia: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: A star that represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: This star embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: A star that rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: This star orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Celesterra: This star twinkles with delight, mirroring the joy and laughter we share.",
+        "Luminera: This star represents the awe and wonder of our love.",
+        "Eclipsara: A star that rings with a melody of love, symbolizing the music of our hearts.",
+        "Zyrella: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Solaria: A star that embodies the golden aura of love that surrounds us.",
+        "Astrania: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Belladora: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Zyronia: A star that orbits in harmony, much like the way we move together in sync.",
+        "Auriona: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Celesterra: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Luminera: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Eclipsara: This star represents the awe and wonder of our love.",
+        "Zyrella: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Solaria: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Astrania: This star embodies the golden aura of love that surrounds us.",
+        "Belladora: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Zyronia: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Auriona: A star that orbits in harmony, much like the way we move together in sync.",
+        "Celesterra: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Luminera: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Eclipsara: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Zyrella: A star that represents the awe and wonder of our love.",
+        "Solaria: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Astrania: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Belladora: This star embodies the golden aura of love that surrounds us.",
+        "Zyronia: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Auriona: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Celesterra: A star that orbits in harmony, much like the way we move together in sync.",
+        "Luminera: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Eclipsara: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Zyrella: A star that twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Astrania: A star that represents the awe and wonder of our love.",
+        "Belladora: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Zyronia: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Auriona: This star embodies the golden aura of love that surrounds us.",
+        "Celesterra: This star twinkles with delight, much like the joy you bring into my life.",
+        "Luminera: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Eclipsara: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyrella: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Astrania: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Belladora: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Zyronia: A star that represents the awe and wonder of our love.",
+        "Auriona: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Celesterra: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Luminera: This star embodies the golden aura of love that surrounds us.",
+        "Eclipsara: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Zyrella: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Solaria: A star that orbits in harmony, much like the way we move together in sync.",
+        "Astrania: A star that glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Belladora: This star shines with brilliance, much like the way you brighten up my life.",
+        "Zyronia: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: This star shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: A star that rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: This star orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: A star that rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: This star orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: A star that rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: This star orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+        "Belladora: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Zyronia: A star that shines with brilliance, much like the way you brighten up my life.",
+        "Auriona: This star twinkles with a playful charm, mirroring the joy and laughter we share.",
+        "Celesterra: This star represents the awe and wonder of our love.",
+        "Luminera: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Eclipsara: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Zyrella: A star that embodies the golden aura of love that surrounds us.",
+        "Solaria: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Astrania: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Belladora: A star that orbits in harmony, much like the way we move together in sync.",
+        "Zyronia: This star glimmers with a sense of wonder, symbolizing the magic of our love.",
+        "Auriona: A star that represents the awe and wonder of our love.",
+        "Celesterra: This star rings with a melody of love, symbolizing the music of our hearts.",
+        "Luminera: A star that glimmers with a sense of mystery, mirroring the enigma of our love.",
+        "Eclipsara: This star embodies the golden aura of love that surrounds us.",
+        "Zyrella: A star that twinkles with delight, much like the joy you bring into my life.",
+        "Solaria: This star radiates with a luminous glow, mirroring the light you bring into my heart.",
+        "Astrania: A star that orbits in harmony, much like the way we move together in sync.",
+      ];
+
+      const modal = document.getElementById("starModal");
+      const starNameElement = document.getElementById("starName");
+      const starDescriptionElement = document.getElementById("starDescription");
+      const starQuoteElement = document.getElementById("starQuote");
+
+      function drawStar(x, y, size, brightness) {
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, 2 * Math.PI);
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${brightness})`);
+        gradient.addColorStop(1, "transparent");
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
+
+      function getRandomCoordinate(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+      function getRandomQuote() {
+        return quotes[Math.floor(Math.random() * quotes.length)];
+      }
+
+      function findClickedStar(event) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        for (const star of stars) {
+          const distance = Math.sqrt(
+            (star.x - mouseX) ** 2 + (star.y - mouseY) ** 2
+          );
+          if (distance < star.size) {
+            displayStarInfo(star.name, star.description, star.quote);
+            break;
+          }
+        }
+      }
+
+      function displayStarInfo(name, description, quote) {
+        starNameElement.textContent = name;
+        starDescriptionElement.textContent = description;
+        starQuoteElement.textContent = quote;
+        modal.style.display = "block";
+      }
+
+      function closeModal() {
+        modal.style.display = "none";
+      }
+
+      function updateStarsPosition() {
+        for (const star of stars) {
+          star.x += (Math.random() - 0.5) * 0.5; // Move the star horizontally within a small range
+          star.y += (Math.random() - 0.5) * 0.5; // Move the star vertically within a small range
+
+          // Ensure stars stay within the canvas boundaries
+          if (star.x < 0) star.x = canvas.width;
+          if (star.x > canvas.width) star.x = 0;
+          if (star.y < 0) star.y = canvas.height;
+          if (star.y > canvas.height) star.y = 0;
+        }
+      }
+
+      function getStarOrdinalNumber(number) {
+        const lastDigit = number % 10;
+        const lastTwoDigits = number % 100;
+
+        if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+          return `${number}th`;
+        } else if (lastDigit === 1) {
+          return `${number}st`;
+        } else if (lastDigit === 2) {
+          return `${number}nd`;
+        } else if (lastDigit === 3) {
+          return `${number}rd`;
+        } else {
+          return `${number}th`;
+        }
+      }
+
+      function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw big stars
+        for (let i = 0; i < numBigStars; i++) {
+          const x = getRandomCoordinate(canvas.width);
+          const y = getRandomCoordinate(canvas.height);
+          const size = 10;
+          stars.push({
+            x,
+            y,
+            size,
+            name: `Star ${i + 1}/${totalStars}`,
+            brightness: 1,
+            description: `In Jowie's Galaxy: The ${getStarOrdinalNumber(
+              i + 1
+            )} Star among ${totalStars}.`,
+            quote: getRandomQuote(),
+          });
+          drawStar(x, y, size, 1);
+        }
+
+        // Draw small stars
+        for (let i = 0; i < numSmallStars; i++) {
+          const x = getRandomCoordinate(canvas.width);
+          const y = getRandomCoordinate(canvas.height);
+          const size = Math.random() * 2 + 1; // Random size between 1 and 3
+          stars.push({
+            x,
+            y,
+            size,
+            name: `Star ${getStarOrdinalNumber(
+              numBigStars + i + 1
+            )}/${totalStars}`,
+            brightness: 1,
+            description: `In Jowie's Galaxy: The ${getStarOrdinalNumber(
+              numBigStars + i + 1
+            )} Star among ${totalStars}.`,
+            quote: getRandomQuote(),
+          });
+          drawStar(x, y, size, 1);
+        }
+      }
+
+      function animate() {
+        updateStarsPosition();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const star of stars) {
+          drawStar(star.x, star.y, star.size, star.brightness);
+        }
+        requestAnimationFrame(animate);
+      }
+
+      drawStars();
+      canvas.addEventListener("click", findClickedStar);
+      animate();
+    </script>
+  </body>
+</html>
